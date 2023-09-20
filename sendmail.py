@@ -1,19 +1,37 @@
 import smtplib
 import ssl
 import os
+import imghdr
+from email.message import EmailMessage
 
-def send_email(message):
+def send_email(imgpath):
+    print('Send email func started')
+    message = EmailMessage()
+    message['Subject'] = 'Camera detected an object'
+    message.set_content('We detected an object in your camera')
+    
+    with open(imgpath, 'rb') as file:
+        content = file.read()
+        message.add_attachment(content, maintype = 'image',
+                               subtype = imghdr.what(None, content) )
+
+
+
+
+
     host = 'smtp.gmail.com'
-    port = 465
+    port = 587
 
     username = 'aditya.khera7@gmail.com'
     password = os.getenv('PASSWORD')
-
-    context = ssl.create_default_context()
     receiver = 'aditya.khera7@gmail.com'
 
+    gmail = smtplib.SMTP(host, port)
+    gmail.ehlo()
+    gmail.starttls()
+    gmail.login(username, password)
+    gmail.sendmail(username, receiver, message.as_string())
+    gmail.quit()
 
-    with smtplib.SMTP_SSL(host, port, context= context) as server:
-        server.login(username, password)
-        server.sendmail(username, receiver, message)
+    print('Send email func ended')
     
